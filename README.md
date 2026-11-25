@@ -1,9 +1,18 @@
-# mod-transmog-plus
+# Transmog Plus 1.15.7
+
+<div align="center">
+  
+![Interface Version](https://img.shields.io/badge/Interface-30300-blue)
+![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange)
+[![Version](https://img.shields.io/badge/Version-1.15.7-green)](https://github.com/EvilTactician/wow-mod-transmog-plus)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+
+</div>
 
 Slot-based transmogrification module for [AzerothCore](https://github.com/azerothcore/azerothcore-wotlk).
 Appearances are stored per slot (not per item), so your look stays when you swap gear.
 
-This is the buildthehomelab fork. It is based on
+This is the EvilTactician fork of the buildthehomelab fork. It is based on
 [Saor79's fork](https://github.com/Saor79/mod-transmog-plus) including its
 `feature/transmog-sets` branch (the Transmog Sets browser), which in turn forks
 [Stefan2102/mod-transmog-plus](https://github.com/Stefan2102/mod-transmog-plus). On top of that
@@ -81,11 +90,11 @@ it collects appearances the retail way (see below) and ships a migration from mo
 - `/transmog`, or a key bound under Key Bindings > Transmog, opens the transmog window
   anywhere, no NPC needed (switch off with `Transmog.OpenAnywhere = 0`). `/transmog anchor`
   moves the new-appearance alert.
-- With the [Journal](https://github.com/buildthehomelab/wow-mod-forever-journal) addon installed,
+- With the [Journal](https://github.com/EvilTactician/wow-mod-forever-journal) addon installed,
   the transmog window is also the Journal's **Appearances** tab, beside its dungeons, mounts and
   pets. It opens there the way `/transmog` does, so it needs `Transmog.OpenAnywhere = 1`; with it
   off the tab says to visit a Transmogrifier.
-- With [DragonUI](https://github.com/buildthehomelab/wow-addon-DragonUI) installed, the transmog
+- With [DragonUI](https://github.com/EvilTactician/wow-addon-DragonUI) installed, the transmog
   window takes DragonUI's retail look (bronze frame, marble panes, red buttons) instead of
   its own art.
 - Preview tiles frame the part of the body the slot covers; weapon tiles zoom on the hand
@@ -126,12 +135,12 @@ gossip menu is used as a fallback.
    folder name `mod-transmog-plus`, because AzerothCore derives the loader function name from it:
 
    ```bash
-   git clone https://github.com/buildthehomelab/wow-mod-transmog-plus.git mod-transmog-plus
+   git clone https://github.com/EvilTactician/wow-mod-transmog-plus.git mod-transmog-plus
    ```
 2. Re-run CMake and build.
 3. Copy `conf/mod_transmog_plus.conf.dist` to `mod_transmog_plus.conf` and adjust as needed.
 4. Import the SQL files manually, or let AzerothCore auto-import them on next server start.
-5. Spawn the Transmog NPC in-game: `.npc add 190012`
+5. (Optional) To spawn the Transmog NPC in-game: `.npc add 190012`
 
 Addon installation (optional): copy the `addon/Transmog/` folder to your client's
 `Interface/AddOns/` directory.
@@ -180,7 +189,9 @@ All prices, quality restrictions, type rules, and requirement ignores are config
 
 ## Credits
 
-Author of this fork: [buildthehomelab](https://github.com/buildthehomelab)
+Author of this fork: EvilTactician
+
+Author of the original fork: [buildthehomelab](https://github.com/buildthehomelab)
 
 Based on:
 - [flekz-games](https://github.com/flekz-games) for [cmangos-transmog](https://github.com/flekz-games/cmangos-transmog)

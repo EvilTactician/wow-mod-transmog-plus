@@ -40,13 +40,14 @@ function Transmog:IsWeaponSlot(slot)
 end
 
 -- Turns the holding hand side-on to the camera and zooms on it, as the gloves tiles do, so the
--- weapon fills the tile instead of hanging off a full-body view.
-function Transmog:FrameWeaponModel(model, invType)
+-- weapon fills the tile instead of hanging off a full-body view. zoom adds to the depth.
+function Transmog:FrameWeaponModel(model, invType, zoom)
     local base = WEAPON_RACE[self.race] or { 0, 0, 0 }
     local depth, height = 4.8, 0.2
     if LONG[invType] then
         depth, height = 3.3, 0
     end
+    depth = depth + (zoom or 0)
 
     if LEFT_HAND[invType] then
         model:SetRotation(-1.5)
@@ -67,6 +68,45 @@ function Transmog:ApplyCameraNudge(model, slot)
     if nudge[4] then
         model:SetRotation(nudge[4])
     end
+end
+
+-- A tile's model loads in the background after SetUnit/Undress/TryOn, and the client can then
+-- draw it with the model's own camera (zoomed out on the whole body) or off its framing,
+-- although GetPosition still reports the framing. Setting the position again doesn't fix it;
+-- dressing the tile again once the model has loaded does, as picking the slot a second time
+-- does. So each drawn tile is dressed again at these times (seconds) after the last draw:
+-- early, so the jump is barely seen. The frame only runs until then, and only touches the
+-- tiles' models.
+local REDRESS_AT = { 0.1 }
+
+local redresser = CreateFrame("Frame")
+redresser:Hide()
+redresser.tiles = {}
+redresser.elapsed = 0
+redresser.step = 1
+redresser:SetScript("OnUpdate", function(self, elapsed)
+    self.elapsed = self.elapsed + elapsed
+    if self.elapsed < REDRESS_AT[self.step] then
+        return
+    end
+    for model, redress in pairs(self.tiles) do
+        if model:IsVisible() then
+            redress()
+        end
+    end
+    self.step = self.step + 1
+    if self.step > table.getn(REDRESS_AT) then
+        self.tiles = {}
+        self:Hide()
+    end
+end)
+
+-- Dresses a drawn tile again (redress) once its model has had time to load.
+function Transmog:RedressTileLater(model, redress)
+    redresser.tiles[model] = redress
+    redresser.elapsed = 0
+    redresser.step = 1
+    redresser:Show()
 end
 
 local function slotLabel(slot)

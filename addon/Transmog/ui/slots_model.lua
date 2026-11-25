@@ -63,21 +63,45 @@ function Transmog:frameFromInvType(invType, clientSlot)
     return nil
 end
 
+-- The order the preview model is dressed in. A one-hander tried on always lands in the main
+-- hand, so the weapons go last, and the selected slot after them (see RefreshPreviewModel).
+local PREVIEW_ORDER = { 1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 19, 18, 17, 16 }
+
+-- The model holds the ranged weapon or the melee weapons, as the character last used them, so
+-- while a weapon slot is selected the other kind is left off and the selected look shows.
+local LEAVE_OFF = {
+    [16] = { [18] = true },
+    [17] = { [18] = true },
+    [18] = { [16] = true, [17] = true },
+}
+
 -- Rebuilds the character preview model from scratch, skipping the Hidden
 -- sentinel. DressUpModel has no per-slot TryOff, so we must Undress/re-TryOn.
 function Transmog:RefreshPreviewModel()
     TransmogFramePlayerModel:Undress()
-    for _, InventorySlotId in pairs(self.inventorySlots) do
-        local effective = self.transmogStatusToServer[InventorySlotId]
-        if not effective or effective == 0 then
-            effective = self.equippedItems[InventorySlotId]
+    local selected = self.currentTransmogSlot
+    local leaveOff = LEAVE_OFF[selected] or {}
+    for _, InventorySlotId in ipairs(PREVIEW_ORDER) do
+        if InventorySlotId ~= selected and not leaveOff[InventorySlotId] then
+            self:TryOnPreviewSlot(InventorySlotId)
         end
-        if effective and effective ~= 0 and effective ~= Transmog.HIDDEN_ITEM_ID then
-            if self:IsIllusionSlot(InventorySlotId) then
-                TransmogFramePlayerModel:TryOn("item:" .. effective .. ":" .. self:EnchantShownForSlot(InventorySlotId) .. ":0:0:0:0:0:0:0")
-            else
-                TransmogFramePlayerModel:TryOn(effective)
-            end
+    end
+    -- Last, so the selected weapon's look is the one in the main hand.
+    if selected then
+        self:TryOnPreviewSlot(selected)
+    end
+end
+
+function Transmog:TryOnPreviewSlot(InventorySlotId)
+    local effective = self.transmogStatusToServer[InventorySlotId]
+    if not effective or effective == 0 then
+        effective = self.equippedItems[InventorySlotId]
+    end
+    if effective and effective ~= 0 and effective ~= Transmog.HIDDEN_ITEM_ID then
+        if self:IsIllusionSlot(InventorySlotId) then
+            TransmogFramePlayerModel:TryOn("item:" .. effective .. ":" .. self:EnchantShownForSlot(InventorySlotId) .. ":0:0:0:0:0:0:0")
+        else
+            TransmogFramePlayerModel:TryOn(effective)
         end
     end
 end
@@ -308,6 +332,7 @@ function selectTransmogSlot(InventorySlotId, slotName)
         Transmog.currentTransmogSlotName = nil
         Transmog.currentTransmogSlot = nil
 		Transmog.currentTransmogItemClass = nil
+        Transmog:UpdateIllusionsTab()
         return true
     end
 
@@ -321,6 +346,7 @@ function selectTransmogSlot(InventorySlotId, slotName)
     Transmog.currentPage = 1
     Transmog.currentTransmogSlotName = slotName
     Transmog.currentTransmogSlot = InventorySlotId
+    Transmog:UpdateIllusionsTab()
 
     if not GetInventoryItemLink('player', Transmog.currentTransmogSlot) then
         selectTransmogSlot(-1)

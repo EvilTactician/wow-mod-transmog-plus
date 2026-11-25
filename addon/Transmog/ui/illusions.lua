@@ -69,6 +69,28 @@ function Transmog:SetIllusionsTabActive(active)
     TransmogFrameIllusionsButtonText:SetText((active and HIGHLIGHT_FONT_COLOR_CODE or NORMAL_FONT_COLOR_CODE) .. 'Illusions')
 end
 
+-- The Illusions tab only shows while a weapon that can take an illusion is selected; the tabs
+-- to its right move into its place while it's hidden.
+function Transmog:UpdateIllusionsTab()
+    if not TransmogFrameIllusionsButton then
+        return
+    end
+    local slot = self.currentTransmogSlot
+    local show = slot and self:IsIllusionSlot(slot) and self:CanSlotHaveIllusion(slot)
+    if show then
+        TransmogFrameIllusionsButton:Show()
+    else
+        TransmogFrameIllusionsButton:Hide()
+    end
+    local shift = show and 0 or -84
+    if TransmogFrameBackpacksButton then
+        TransmogFrameBackpacksButton:SetPoint("TOPLEFT", TransmogFrame, "TOPLEFT", 502 + shift, -47)
+    end
+    if TransmogFrameFormsButton then
+        TransmogFrameFormsButton:SetPoint("TOPLEFT", TransmogFrame, "TOPLEFT", 586 + shift, -47)
+    end
+end
+
 -- The Items view reuses the "no appearances" label, so put its own text back.
 function Transmog:LeaveIllusionsView()
     self:SetIllusionsTabActive(false)
@@ -98,10 +120,23 @@ function Transmog:OnIllusionStatus(mainHand, offHand)
 end
 
 -- Same framing as the Items tab weapon tiles (ui/tile_camera.lua).
+-- Illusion tiles sit closer than the Items weapon tiles, so the enchant is easier to see.
+local ILLUSION_ZOOM = 1
+
 local function positionWeaponModel(model, slot, link)
     local invType = link and select(9, GetItemInfo(link))
-    Transmog:FrameWeaponModel(model, invType)
+    Transmog:FrameWeaponModel(model, invType, ILLUSION_ZOOM)
     Transmog:ApplyCameraNudge(model, slot)
+end
+
+-- Puts the player on an illusion tile, wearing only the weapon with that enchant.
+local function dressIllusionTile(model, slot, link)
+    model:SetUnit("player")
+    positionWeaponModel(model, slot, link)
+    model:Undress()
+    if link then
+        model:TryOn(link)
+    end
 end
 
 -- Grid of illusions for the selected weapon slot: "No illusion" (the weapon's own enchant),
@@ -164,13 +199,11 @@ function Transmog:RenderIllusions()
             frame:Show()
 
             local model = getglobal('TransmogLook' .. itemIndex .. 'ItemModel')
-            model:SetUnit("player")
             local link = self:WeaponLinkForSlot(slot, self:EnchantShownForSlot(slot, entry.id))
-            positionWeaponModel(model, slot, link)
-            model:Undress()
-            if link then
-                model:TryOn(link)
-            end
+            dressIllusionTile(model, slot, link)
+            self:RedressTileLater(model, function()
+                dressIllusionTile(model, slot, link)
+            end)
 
             col = col + 1
             if col == 5 then
