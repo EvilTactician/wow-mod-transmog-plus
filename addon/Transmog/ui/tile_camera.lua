@@ -72,17 +72,12 @@ end
 
 -- A tile's model loads in the background after SetUnit/Undress/TryOn, and the client can then
 -- draw it with the model's own camera (zoomed out on the whole body) or off its framing,
--- although GetPosition still reports the framing. Setting the same position again doesn't
--- fix it; dressing the tile again once the model has loaded does, as picking the slot a
--- second time does. A redressed tile can still be drawn at another zoom than its framing,
--- while moving its position by any amount puts it right. So each drawn tile is dressed again
--- early (the jump is barely seen), then moved a hair and back. The frame only runs until
--- the last step, and only touches the tiles' models.
-local STEPS = {
-    { 0.1, "redress" },
-    { 0.2, 0.001 },
-    { 0.5, -0.001 },
-}
+-- although GetPosition still reports the framing. Setting the position again doesn't fix it;
+-- dressing the tile again once the model has loaded does, as picking the slot a second time
+-- does. So each drawn tile is dressed again at these times (seconds) after the last draw:
+-- early, so the jump is barely seen. The frame only runs until then, and only touches the
+-- tiles' models.
+local REDRESS_AT = { 0.1 }
 
 local redresser = CreateFrame("Frame")
 redresser:Hide()
@@ -91,22 +86,16 @@ redresser.elapsed = 0
 redresser.step = 1
 redresser:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = self.elapsed + elapsed
-    local step = STEPS[self.step]
-    if self.elapsed < step[1] then
+    if self.elapsed < REDRESS_AT[self.step] then
         return
     end
     for model, redress in pairs(self.tiles) do
         if model:IsVisible() then
-            if step[2] == "redress" then
-                redress()
-            else
-                local Z, X, Y = model:GetPosition()
-                model:SetPosition(Z + step[2], X, Y)
-            end
+            redress()
         end
     end
     self.step = self.step + 1
-    if self.step > table.getn(STEPS) then
+    if self.step > table.getn(REDRESS_AT) then
         self.tiles = {}
         self:Hide()
     end
