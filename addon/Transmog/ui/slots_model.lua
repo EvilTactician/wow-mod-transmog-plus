@@ -67,13 +67,22 @@ end
 -- hand, so the weapons go last, and the selected slot after them (see RefreshPreviewModel).
 local PREVIEW_ORDER = { 1, 3, 4, 5, 6, 7, 8, 9, 10, 15, 19, 18, 17, 16 }
 
+-- The model holds the ranged weapon or the melee weapons, as the character last used them, so
+-- while a weapon slot is selected the other kind is left off and the selected look shows.
+local LEAVE_OFF = {
+    [16] = { [18] = true },
+    [17] = { [18] = true },
+    [18] = { [16] = true, [17] = true },
+}
+
 -- Rebuilds the character preview model from scratch, skipping the Hidden
 -- sentinel. DressUpModel has no per-slot TryOff, so we must Undress/re-TryOn.
 function Transmog:RefreshPreviewModel()
     TransmogFramePlayerModel:Undress()
     local selected = self.currentTransmogSlot
+    local leaveOff = LEAVE_OFF[selected] or {}
     for _, InventorySlotId in ipairs(PREVIEW_ORDER) do
-        if InventorySlotId ~= selected then
+        if InventorySlotId ~= selected and not leaveOff[InventorySlotId] then
             self:TryOnPreviewSlot(InventorySlotId)
         end
     end

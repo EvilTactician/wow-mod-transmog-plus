@@ -98,9 +98,14 @@ function Transmog:OnIllusionStatus(mainHand, offHand)
 end
 
 -- Same framing as the Items tab weapon tiles (ui/tile_camera.lua).
+-- Illusion tiles sit closer than the Items weapon tiles, so the enchant is easier to see.
+local ILLUSION_ZOOM = 1
+
 local function positionWeaponModel(model, slot, link)
     local invType = link and select(9, GetItemInfo(link))
     Transmog:FrameWeaponModel(model, invType)
+    local Z, X, Y = model:GetPosition()
+    model:SetPosition(Z + ILLUSION_ZOOM, X, Y)
     Transmog:ApplyCameraNudge(model, slot)
 end
 
