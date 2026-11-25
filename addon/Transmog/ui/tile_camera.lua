@@ -69,6 +69,48 @@ function Transmog:ApplyCameraNudge(model, slot)
     end
 end
 
+-- A tile's model loads in the background after Undress/TryOn, and the client then draws it
+-- with the model's own camera: zoomed out on the whole body, although GetPosition still
+-- reports the framing. Setting the framing again fixes it, so for a short while after a tile
+-- is framed it is set again a few times a second. The frame only runs during that window.
+local REFRAME_FOR = 2
+local REFRAME_EVERY = 0.1
+
+local reframer = CreateFrame("Frame")
+reframer:Hide()
+reframer.models = {}
+reframer.left = 0
+reframer.wait = 0
+reframer:SetScript("OnUpdate", function(self, elapsed)
+    self.left = self.left - elapsed
+    self.wait = self.wait - elapsed
+    if self.wait > 0 and self.left > 0 then
+        return
+    end
+    self.wait = REFRAME_EVERY
+    for model, framing in pairs(self.models) do
+        if model:IsVisible() then
+            -- Through zero first, so the client can't skip a position it thinks it already has.
+            model:SetPosition(0, 0, 0)
+            model:SetPosition(framing[1], framing[2], framing[3])
+            model:SetFacing(framing[4])
+        end
+    end
+    if self.left <= 0 then
+        self.models = {}
+        self:Hide()
+    end
+end)
+
+-- Remembers a framed tile's position and facing, and keeps them set until its model has loaded.
+function Transmog:KeepTileFraming(model)
+    local Z, X, Y = model:GetPosition()
+    reframer.models[model] = { Z, X, Y, model:GetFacing() }
+    reframer.left = REFRAME_FOR
+    reframer.wait = REFRAME_EVERY
+    reframer:Show()
+end
+
 local function slotLabel(slot)
     return string.gsub(Transmog.inventorySlotNames[slot] or ("slot " .. slot), " Slot", "")
 end

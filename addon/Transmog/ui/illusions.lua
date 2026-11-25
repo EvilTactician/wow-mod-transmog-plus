@@ -167,6 +167,7 @@ function Transmog:RenderIllusions()
             model:SetUnit("player")
             local link = self:WeaponLinkForSlot(slot, self:EnchantShownForSlot(slot, entry.id))
             positionWeaponModel(model, slot, link)
+            self:KeepTileFraming(model)
             model:Undress()
             if link then
                 model:TryOn(link)

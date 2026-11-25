@@ -269,6 +269,9 @@ function Transmog:renderAvailableTransmogs(slot, itemClass)
             local model = getglobal('TransmogLook' .. itemIndex .. 'ItemModel')
 
             model:SetUnit("player")
+            -- The offsets below build on this, so start from zero: a weapon slot's framing is
+            -- absolute, and must not carry over into the next slot's tiles.
+            model:SetPosition(0, 0, 0)
             model:SetRotation(0.61);
             local Z, X, Y = model:GetPosition(Z, X, Y)
 
@@ -434,6 +437,7 @@ function Transmog:renderAvailableTransmogs(slot, itemClass)
             end
 
             self:ApplyCameraNudge(model, self.currentTransmogSlot)
+            self:KeepTileFraming(model)
 
             model:Undress()
 
