@@ -73,9 +73,10 @@ end
 -- draw it with the model's own camera (zoomed out on the whole body) or off its framing,
 -- although GetPosition still reports the framing. Setting the position again doesn't fix it;
 -- dressing the tile again once the model has loaded does, as picking the slot a second time
--- does. So each drawn tile is dressed again at these times (seconds) after the last draw.
--- The frame only runs during that window, and only touches the tiles' models.
-local REDRESS_AT = { 0.3, 1.2 }
+-- does. So each drawn tile is dressed again at these times (seconds) after the last draw:
+-- early, so the jump is barely seen. The frame only runs until then, and only touches the
+-- tiles' models.
+local REDRESS_AT = { 0.1 }
 
 local redresser = CreateFrame("Frame")
 redresser:Hide()
