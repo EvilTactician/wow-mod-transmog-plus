@@ -332,6 +332,7 @@ function selectTransmogSlot(InventorySlotId, slotName)
         Transmog.currentTransmogSlotName = nil
         Transmog.currentTransmogSlot = nil
 		Transmog.currentTransmogItemClass = nil
+        Transmog:UpdateIllusionsTab()
         return true
     end
 
@@ -345,6 +346,7 @@ function selectTransmogSlot(InventorySlotId, slotName)
     Transmog.currentPage = 1
     Transmog.currentTransmogSlotName = slotName
     Transmog.currentTransmogSlot = InventorySlotId
+    Transmog:UpdateIllusionsTab()
 
     if not GetInventoryItemLink('player', Transmog.currentTransmogSlot) then
         selectTransmogSlot(-1)

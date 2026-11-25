@@ -40,13 +40,14 @@ function Transmog:IsWeaponSlot(slot)
 end
 
 -- Turns the holding hand side-on to the camera and zooms on it, as the gloves tiles do, so the
--- weapon fills the tile instead of hanging off a full-body view.
-function Transmog:FrameWeaponModel(model, invType)
+-- weapon fills the tile instead of hanging off a full-body view. zoom adds to the depth.
+function Transmog:FrameWeaponModel(model, invType, zoom)
     local base = WEAPON_RACE[self.race] or { 0, 0, 0 }
     local depth, height = 4.8, 0.2
     if LONG[invType] then
         depth, height = 3.3, 0
     end
+    depth = depth + (zoom or 0)
 
     if LEFT_HAND[invType] then
         model:SetRotation(-1.5)

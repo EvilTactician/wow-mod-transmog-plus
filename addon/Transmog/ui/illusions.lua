@@ -69,6 +69,28 @@ function Transmog:SetIllusionsTabActive(active)
     TransmogFrameIllusionsButtonText:SetText((active and HIGHLIGHT_FONT_COLOR_CODE or NORMAL_FONT_COLOR_CODE) .. 'Illusions')
 end
 
+-- The Illusions tab only shows while a weapon that can take an illusion is selected; the tabs
+-- to its right move into its place while it's hidden.
+function Transmog:UpdateIllusionsTab()
+    if not TransmogFrameIllusionsButton then
+        return
+    end
+    local slot = self.currentTransmogSlot
+    local show = slot and self:IsIllusionSlot(slot) and self:CanSlotHaveIllusion(slot)
+    if show then
+        TransmogFrameIllusionsButton:Show()
+    else
+        TransmogFrameIllusionsButton:Hide()
+    end
+    local shift = show and 0 or -84
+    if TransmogFrameBackpacksButton then
+        TransmogFrameBackpacksButton:SetPoint("TOPLEFT", TransmogFrame, "TOPLEFT", 502 + shift, -47)
+    end
+    if TransmogFrameFormsButton then
+        TransmogFrameFormsButton:SetPoint("TOPLEFT", TransmogFrame, "TOPLEFT", 586 + shift, -47)
+    end
+end
+
 -- The Items view reuses the "no appearances" label, so put its own text back.
 function Transmog:LeaveIllusionsView()
     self:SetIllusionsTabActive(false)
@@ -103,9 +125,7 @@ local ILLUSION_ZOOM = 1
 
 local function positionWeaponModel(model, slot, link)
     local invType = link and select(9, GetItemInfo(link))
-    Transmog:FrameWeaponModel(model, invType)
-    local Z, X, Y = model:GetPosition()
-    model:SetPosition(Z + ILLUSION_ZOOM, X, Y)
+    Transmog:FrameWeaponModel(model, invType, ILLUSION_ZOOM)
     Transmog:ApplyCameraNudge(model, slot)
 end
 
