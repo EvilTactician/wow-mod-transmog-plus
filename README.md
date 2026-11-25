@@ -140,7 +140,7 @@ gossip menu is used as a fallback.
 2. Re-run CMake and build.
 3. Copy `conf/mod_transmog_plus.conf.dist` to `mod_transmog_plus.conf` and adjust as needed.
 4. Import the SQL files manually, or let AzerothCore auto-import them on next server start.
-5. Spawn the Transmog NPC in-game: `.npc add 190012`
+5. (Optional) To spawn the Transmog NPC in-game: `.npc add 190012`
 
 Addon installation (optional): copy the `addon/Transmog/` folder to your client's
 `Interface/AddOns/` directory.
