@@ -1,4 +1,13 @@
-# mod-transmog-plus
+# Transmog Plus 1.15.5
+
+<div align="center">
+  
+![Interface Version](https://img.shields.io/badge/Interface-30300-blue)
+![WoW Version](https://img.shields.io/badge/WoW-3.3.5a-orange)
+[![Version](https://img.shields.io/badge/Version-1.15.5-green)](https://github.com/EvilTactician/wow-mod-transmog-plus)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+
+</div>
 
 Slot-based transmogrification module for [AzerothCore](https://github.com/azerothcore/azerothcore-wotlk).
 Appearances are stored per slot (not per item), so your look stays when you swap gear.
