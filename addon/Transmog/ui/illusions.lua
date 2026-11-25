@@ -104,6 +104,16 @@ local function positionWeaponModel(model, slot, link)
     Transmog:ApplyCameraNudge(model, slot)
 end
 
+-- Puts the player on an illusion tile, wearing only the weapon with that enchant.
+local function dressIllusionTile(model, slot, link)
+    model:SetUnit("player")
+    positionWeaponModel(model, slot, link)
+    model:Undress()
+    if link then
+        model:TryOn(link)
+    end
+end
+
 -- Grid of illusions for the selected weapon slot: "No illusion" (the weapon's own enchant),
 -- "Hide enchant", then every collected illusion by name.
 function Transmog:RenderIllusions()
@@ -164,14 +174,11 @@ function Transmog:RenderIllusions()
             frame:Show()
 
             local model = getglobal('TransmogLook' .. itemIndex .. 'ItemModel')
-            model:SetUnit("player")
             local link = self:WeaponLinkForSlot(slot, self:EnchantShownForSlot(slot, entry.id))
-            positionWeaponModel(model, slot, link)
-            self:KeepTileFraming(model)
-            model:Undress()
-            if link then
-                model:TryOn(link)
-            end
+            dressIllusionTile(model, slot, link)
+            self:RedressTileLater(model, function()
+                dressIllusionTile(model, slot, link)
+            end)
 
             col = col + 1
             if col == 5 then

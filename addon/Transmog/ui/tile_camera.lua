@@ -69,46 +69,42 @@ function Transmog:ApplyCameraNudge(model, slot)
     end
 end
 
--- A tile's model loads in the background after Undress/TryOn, and the client then draws it
--- with the model's own camera: zoomed out on the whole body, although GetPosition still
--- reports the framing. Setting the framing again fixes it, so for a short while after a tile
--- is framed it is set again a few times a second. The frame only runs during that window.
-local REFRAME_FOR = 2
-local REFRAME_EVERY = 0.1
+-- A tile's model loads in the background after SetUnit/Undress/TryOn, and the client can then
+-- draw it with the model's own camera (zoomed out on the whole body) or off its framing,
+-- although GetPosition still reports the framing. Setting the position again doesn't fix it;
+-- dressing the tile again once the model has loaded does, as picking the slot a second time
+-- does. So each drawn tile is dressed again at these times (seconds) after the last draw.
+-- The frame only runs during that window, and only touches the tiles' models.
+local REDRESS_AT = { 0.3, 1.2 }
 
-local reframer = CreateFrame("Frame")
-reframer:Hide()
-reframer.models = {}
-reframer.left = 0
-reframer.wait = 0
-reframer:SetScript("OnUpdate", function(self, elapsed)
-    self.left = self.left - elapsed
-    self.wait = self.wait - elapsed
-    if self.wait > 0 and self.left > 0 then
+local redresser = CreateFrame("Frame")
+redresser:Hide()
+redresser.tiles = {}
+redresser.elapsed = 0
+redresser.step = 1
+redresser:SetScript("OnUpdate", function(self, elapsed)
+    self.elapsed = self.elapsed + elapsed
+    if self.elapsed < REDRESS_AT[self.step] then
         return
     end
-    self.wait = REFRAME_EVERY
-    for model, framing in pairs(self.models) do
+    for model, redress in pairs(self.tiles) do
         if model:IsVisible() then
-            -- Through zero first, so the client can't skip a position it thinks it already has.
-            model:SetPosition(0, 0, 0)
-            model:SetPosition(framing[1], framing[2], framing[3])
-            model:SetFacing(framing[4])
+            redress()
         end
     end
-    if self.left <= 0 then
-        self.models = {}
+    self.step = self.step + 1
+    if self.step > table.getn(REDRESS_AT) then
+        self.tiles = {}
         self:Hide()
     end
 end)
 
--- Remembers a framed tile's position and facing, and keeps them set until its model has loaded.
-function Transmog:KeepTileFraming(model)
-    local Z, X, Y = model:GetPosition()
-    reframer.models[model] = { Z, X, Y, model:GetFacing() }
-    reframer.left = REFRAME_FOR
-    reframer.wait = REFRAME_EVERY
-    reframer:Show()
+-- Dresses a drawn tile again (redress) once its model has had time to load.
+function Transmog:RedressTileLater(model, redress)
+    redresser.tiles[model] = redress
+    redresser.elapsed = 0
+    redresser.step = 1
+    redresser:Show()
 end
 
 local function slotLabel(slot)
